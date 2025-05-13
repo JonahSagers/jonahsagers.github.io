@@ -17,23 +17,21 @@
       top: 0;
       left: 50%;
       transform: translate(-50%, 0);
-      --xPos: 0;
-      --yPos: 0;
     }
   </style>
 </head>
 <body>
 
-  <div class="bubble container bg-primary text-white p-4 rounded-circle text-center" id="bubble1" style="width: 150px; height: 150px;">
+  <div class="bubble container bg-primary text-white p-4 rounded-circle text-center" style="width: 150px; height: 150px; --xPos: 0.15; --yPos: 0.3;">
     <h4 style="line-height: 80px;">Bubble</h4>
   </div>
-  <div class="container bg-primary text-white p-4 rounded-circle text-center" id="bubble2" style="width: 150px; height: 150px;">
+  <div class="bubble container bg-primary text-white p-4 rounded-circle text-center" style="width: 150px; height: 150px; --xPos: 0.25; --yPos: 0.7;">
     <h4 style="line-height: 80px;">Bubble</h4>
   </div>
-  <div class="container bg-primary text-white p-4 rounded-circle text-center" id="bubble3" style="width: 150px; height: 150px;">
+  <div class="bubble container bg-primary text-white p-4 rounded-circle text-center" style="width: 150px; height: 150px; --xPos: 0.75; --yPos: 0.3;">
     <h4 style="line-height: 80px;">Bubble</h4>
   </div>
-  <div class="container bg-primary text-white p-4 rounded-circle text-center" id="bubble4" style="width: 150px; height: 150px;">
+  <div class="bubble container bg-primary text-white p-4 rounded-circle text-center" style="width: 150px; height: 150px; --xPos: 0.8; --yPos: 0.75;">
     <h4 style="line-height: 80px;">Bubble</h4>
   </div>
 
@@ -73,18 +71,19 @@
     const xPercent = 0.7;
     const yPercent = 0.9;
 
-    let t = 0;
-
     for (const bubble of bubbles){
-        bubble.style.setProperty("--xPos", window.innerHeight * (Math.random() * yPercent)); 
-        bubble.style.setProperty("--yPos", window.innerWidth/2 * (Math.random() * xPercent * 2 - xPercent));
+        // bubble.xPos = (window.innerHeight * (Math.random() * yPercent)); 
+        // bubble.yPos = (window.innerWidth/2 * (Math.random() * xPercent * 2 - xPercent));
+        bubble.t = Math.random() * 300;
+        bubble.xPos = (parseFloat(bubble.style.getPropertyValue("--xPos")) - 0.5) * window.innerWidth - perlin.noise(bubble.t) * 500;
+        bubble.yPos = parseFloat(bubble.style.getPropertyValue("--yPos")) * window.innerHeight;
+        
+
     }
 
     function animate() {
       for (const bubble of bubbles) {
-        bubble.xPos = bubble.style.getPropertyValue("--xPos");
-        bubble.yPos = bubble.style.getPropertyValue("--yPos");
-        bubble.xNoise = perlin.noise(t) * 300;
+        bubble.xNoise = bubble.xPos + perlin.noise(bubble.t) * 500;
 
         bubble.yPos -= 1; // upward speed
 
@@ -95,13 +94,13 @@
 
         bubble.style.transform = `translate(calc(-50% + ${bubble.xNoise}px), ${bubble.yPos}px)`;
 
-        bubble.style.setProperty("--xPos", bubble.xNoise);
-        bubble.style.setProperty("--yPos", bubble.yPos);
+        // bubble.style.setProperty("--xPos", bubble.xNoise);
+        // bubble.style.setProperty("--yPos", bubble.yPos);
         console.log(bubble.yPos);
 
         bubble.t += 0.0015;
-        requestAnimationFrame(animate);
       }
+      requestAnimationFrame(animate);
     }
 
     animate();
