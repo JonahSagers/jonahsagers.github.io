@@ -1,15 +1,111 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <link rel="stylesheet" href="assets/css/style.css">
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    </head>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Floating Bubble</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background: #f0f8ff;
+    }
+    .bubble {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translate(-50%, 0);
+      --xPos: 0;
+      --yPos: 0;
+    }
+  </style>
+</head>
 <body>
-    <div class="container">
-        <h1 class="mt-5">Hello, Bootstrap on GitHub Pages!</h1>
-        <p>This is a simple example using Bootstrap 5.</p>
-    </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <div class="bubble container bg-primary text-white p-4 rounded-circle text-center" id="bubble1" style="width: 150px; height: 150px;">
+    <h4 style="line-height: 80px;">Bubble</h4>
+  </div>
+  <div class="container bg-primary text-white p-4 rounded-circle text-center" id="bubble2" style="width: 150px; height: 150px;">
+    <h4 style="line-height: 80px;">Bubble</h4>
+  </div>
+  <div class="container bg-primary text-white p-4 rounded-circle text-center" id="bubble3" style="width: 150px; height: 150px;">
+    <h4 style="line-height: 80px;">Bubble</h4>
+  </div>
+  <div class="container bg-primary text-white p-4 rounded-circle text-center" id="bubble4" style="width: 150px; height: 150px;">
+    <h4 style="line-height: 80px;">Bubble</h4>
+  </div>
+
+  <script>
+    // Simple Perlin noise generator
+    class Perlin {
+      constructor() {
+        this.grad = [];
+        for (let i = 0; i < 256; i++) {
+          this.grad[i] = Math.random() * 2 - 1;
+        }
+      }
+
+      fade(t) {
+        return t * t * t * (t * (t * 6 - 15) + 10);
+      }
+
+      lerp(a, b, t) {
+        return a + t * (b - a);
+      }
+
+      noise(x) {
+        let xi = Math.floor(x) & 255;
+        let xf = x - Math.floor(x);
+        let g1 = this.grad[xi];
+        let g2 = this.grad[(xi + 1) & 255];
+        let dot1 = g1 * xf;
+        let dot2 = g2 * (xf - 1);
+        let u = this.fade(xf);
+        return this.lerp(dot1, dot2, u);
+      }
+    }
+
+    const perlin = new Perlin();
+    const bubbles = document.getElementsByClassName('bubble');
+    const bubbleHeight = 150;
+    const xPercent = 0.7;
+    const yPercent = 0.9;
+
+    let t = 0;
+
+    for (const bubble of bubbles){
+        bubble.style.setProperty("--xPos", window.innerHeight * (Math.random() * yPercent)); 
+        bubble.style.setProperty("--yPos", window.innerWidth/2 * (Math.random() * xPercent * 2 - xPercent));
+    }
+
+    function animate() {
+      for (const bubble of bubbles) {
+        bubble.xPos = bubble.style.getPropertyValue("--xPos");
+        bubble.yPos = bubble.style.getPropertyValue("--yPos");
+        bubble.xNoise = perlin.noise(t) * 300;
+
+        bubble.yPos -= 1; // upward speed
+
+        // Reset if the bubble floats off the top
+        if (bubble.yPos < -bubbleHeight) {
+            bubble.yPos = window.innerHeight;
+        }
+
+        bubble.style.transform = `translate(calc(-50% + ${bubble.xNoise}px), ${bubble.yPos}px)`;
+
+        bubble.style.setProperty("--xPos", bubble.xNoise);
+        bubble.style.setProperty("--yPos", bubble.yPos);
+        console.log(bubble.yPos);
+
+        bubble.t += 0.0015;
+        requestAnimationFrame(animate);
+      }
+    }
+
+    animate();
+  </script>
 
 </body>
 </html>
