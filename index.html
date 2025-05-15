@@ -24,7 +24,10 @@
 
   <div class="bubble bg-primary text-white rounded-circle d-flex justify-content-center align-items-center"
       style="width: 150px; height: 150px; --xPos: 0.15; --yPos: 0.3;">
-    <div class="inner-circle bg-white rounded-circle" style="width: 125px; height: 125px;"></div>
+    <div class="inner-circle bg-white rounded-circle d-flex justify-content-center align-items-center" style="width: 125px; height: 125px;">
+      <div class="item text-dark" style="--xPos: 0.5; --yPos: 0.3">hello</div>
+    </div>
+    
   </div>
   <div class="bubble bg-primary text-white rounded-circle d-flex justify-content-center align-items-center"
       style="width: 150px; height: 150px; --xPos: 0.25; --yPos: 0.7;">
@@ -75,27 +78,32 @@
     const yPercent = 0.9;
 
     for (const bubble of bubbles){
-        // bubble.xPos = (window.innerHeight * (Math.random() * yPercent)); 
-        // bubble.yPos = (window.innerWidth/2 * (Math.random() * xPercent * 2 - xPercent));
-        bubble.t = Math.random() * 100;
-        bubble.ySpeed = 0.2 + Math.random() * 0.2;
-        bubble.xPos = (parseFloat(bubble.style.getPropertyValue("--xPos")) - 0.5) * window.innerWidth - perlin.noise(bubble.t) * 500;
-        bubble.yPos = parseFloat(bubble.style.getPropertyValue("--yPos")) * window.innerHeight;
-        bubble.height = parseFloat(bubble.style.getPropertyValue("height"));
-        bubble.size = 1;
-        console.log(bubble.height);
-        
-
+      // bubble.xPos = (window.innerHeight * (Math.random() * yPercent)); 
+      // bubble.yPos = (window.innerWidth/2 * (Math.random() * xPercent * 2 - xPercent));
+      bubble.t = Math.random() * 100;
+      bubble.ySpeed = 0.2 + Math.random() * 0.2;
+      bubble.xPos = (parseFloat(bubble.style.getPropertyValue("--xPos")) - 0.5) * window.innerWidth - perlin.noise(bubble.t) * 500;
+      bubble.yPos = parseFloat(bubble.style.getPropertyValue("--yPos")) * window.innerHeight;
+      bubble.height = parseFloat(bubble.style.getPropertyValue("height"));
+      bubble.size = 1;
+      bubble.items = bubble.querySelectorAll('.item');
+      for(const item of bubble.items){
+        item.xPos = item.style.getPropertyValue("--xPos") * bubble.height;
+        item.yPos = item.style.getPropertyValue("--yPos") * bubble.height;
+        item.xNow = 0;
+        item.yNow = 0;
+      }
+      console.log(bubble.items);
     }
 
     function animate() {
-      for (const bubble of bubbles) {
-        if (bubble.matches(':hover')){
-            bubble.style.setProperty("z-index", 10);
-            mult = 3.5;
+      for(const bubble of bubbles) {
+        if(bubble.matches(':hover')){
+          bubble.style.setProperty("z-index", 10);
+          mult = 4;
         } else {
           bubble.style.setProperty("z-index", 1);
-            mult = 1;
+          mult = 1;
         }
         bubble.xNoise = bubble.xPos + perlin.noise(bubble.t) * 200;
 
@@ -103,7 +111,21 @@
 
         // Reset if the bubble floats off the top
         if (bubble.yPos < -bubble.height) {
-            bubble.yPos = window.innerHeight;
+          bubble.yPos = window.innerHeight;
+        }
+
+        for(const item of bubble.items){
+          //using a square ease multiplies with the parent and creates a cubic
+          //potentially swap this out for a lerp
+          if(mult > 1){
+            item.xNow += (item.xPos - item.xNow) / 7;
+            item.yNow += (item.yPos - item.yNow) / 7;
+          } else {
+            item.xNow += (-item.xNow) / 7;
+            item.yNow += (-item.yNow) / 7;
+          }
+          item.style.transform = `translate(${item.xNow}%, ${item.yNow}%)`;
+          console.log(item.xPos);
         }
 
         bubble.size += (mult  - bubble.size) / 7;
