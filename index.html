@@ -22,17 +22,21 @@
 </head>
 <body>
 
-  <div class="bubble container bg-primary text-white p-4 rounded-circle text-center" style="width: 150px; height: 150px; --xPos: 0.15; --yPos: 0.3;">
-    <h4 style="line-height: 80px;">Bubble</h4>
+  <div class="bubble bg-primary text-white rounded-circle d-flex justify-content-center align-items-center"
+      style="width: 150px; height: 150px; --xPos: 0.15; --yPos: 0.3;">
+    <div class="inner-circle bg-white rounded-circle" style="width: 125px; height: 125px;"></div>
   </div>
-  <div class="bubble container bg-primary text-white p-4 rounded-circle text-center" style="width: 150px; height: 150px; --xPos: 0.25; --yPos: 0.7;">
-    <h4 style="line-height: 80px;">Bubble</h4>
+  <div class="bubble bg-primary text-white rounded-circle d-flex justify-content-center align-items-center"
+      style="width: 150px; height: 150px; --xPos: 0.25; --yPos: 0.7;">
+    <div class="inner-circle bg-white rounded-circle" style="width: 125px; height: 125px;"></div>
   </div>
-  <div class="bubble container bg-primary text-white p-4 rounded-circle text-center" style="width: 150px; height: 150px; --xPos: 0.75; --yPos: 0.3;">
-    <h4 style="line-height: 80px;">Bubble</h4>
+  <div class="bubble bg-primary text-white rounded-circle d-flex justify-content-center align-items-center"
+      style="width: 150px; height: 150px; --xPos: 0.75; --yPos: 0.3;">
+    <div class="inner-circle bg-white rounded-circle" style="width: 125px; height: 125px;"></div>
   </div>
-  <div class="bubble container bg-primary text-white p-4 rounded-circle text-center" style="width: 150px; height: 150px; --xPos: 0.8; --yPos: 0.75;">
-    <h4 style="line-height: 80px;">Bubble</h4>
+  <div class="bubble bg-primary text-white rounded-circle d-flex justify-content-center align-items-center"
+      style="width: 150px; height: 150px; --xPos: 0.8; --yPos: 0.75;">
+    <div class="inner-circle bg-white rounded-circle" style="width: 125px; height: 125px;"></div>
   </div>
 
   <script>
@@ -67,38 +71,51 @@
 
     const perlin = new Perlin();
     const bubbles = document.getElementsByClassName('bubble');
-    const bubbleHeight = 150;
     const xPercent = 0.7;
     const yPercent = 0.9;
 
     for (const bubble of bubbles){
         // bubble.xPos = (window.innerHeight * (Math.random() * yPercent)); 
         // bubble.yPos = (window.innerWidth/2 * (Math.random() * xPercent * 2 - xPercent));
-        bubble.t = Math.random() * 300;
+        bubble.t = Math.random() * 100;
+        bubble.ySpeed = 0.2 + Math.random() * 0.2;
         bubble.xPos = (parseFloat(bubble.style.getPropertyValue("--xPos")) - 0.5) * window.innerWidth - perlin.noise(bubble.t) * 500;
         bubble.yPos = parseFloat(bubble.style.getPropertyValue("--yPos")) * window.innerHeight;
+        bubble.height = parseFloat(bubble.style.getPropertyValue("height"));
+        bubble.size = 1;
+        console.log(bubble.height);
         
 
     }
 
     function animate() {
       for (const bubble of bubbles) {
-        bubble.xNoise = bubble.xPos + perlin.noise(bubble.t) * 500;
+        if (bubble.matches(':hover')){
+            bubble.style.setProperty("z-index", 10);
+            mult = 3.5;
+        } else {
+          bubble.style.setProperty("z-index", 1);
+            mult = 1;
+        }
+        bubble.xNoise = bubble.xPos + perlin.noise(bubble.t) * 200;
 
-        bubble.yPos -= 1; // upward speed
+        bubble.yPos -= bubble.ySpeed / mult; // upward speed
 
         // Reset if the bubble floats off the top
-        if (bubble.yPos < -bubbleHeight) {
+        if (bubble.yPos < -bubble.height) {
             bubble.yPos = window.innerHeight;
         }
 
-        bubble.style.transform = `translate(calc(-50% + ${bubble.xNoise}px), ${bubble.yPos}px)`;
+        bubble.size += (mult  - bubble.size) / 7;
+
+        bubble.style.transform = `translate(calc(-50% + ${bubble.xNoise}px), ${bubble.yPos}px) scale(${bubble.size})`;
 
         // bubble.style.setProperty("--xPos", bubble.xNoise);
         // bubble.style.setProperty("--yPos", bubble.yPos);
-        console.log(bubble.yPos);
 
-        bubble.t += 0.0015;
+        
+
+        bubble.t += 0.001 / mult;
       }
       requestAnimationFrame(animate);
     }
