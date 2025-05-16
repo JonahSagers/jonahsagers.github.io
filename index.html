@@ -18,29 +18,115 @@
       left: 50%;
       transform: translate(-50%, 0);
     }
+    .inner-mask {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+    .inner-mask img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
   </style>
 </head>
 <body>
 
   <div class="bubble bg-primary text-white rounded-circle d-flex justify-content-center align-items-center"
-      style="width: 150px; height: 150px; --xPos: 0.15; --yPos: 0.3;">
-    <div class="inner-circle bg-white rounded-circle d-flex justify-content-center align-items-center" style="width: 125px; height: 125px;">
-      <div class="item text-dark" style="--xPos: 0.5; --yPos: 0.3">hello</div>
+      style="width: 250px; height: 250px; --xPos: 0.2; --yPos: 0.3;">
+
+    <div class="inner-mask inner-circle bg-white rounded-circle d-flex justify-content-center align-items-center" 
+        style="width: 86%; height: 86%; position: relative;">
+
+      <img src="./assets/images/Commencement.jpeg" class="item thumb rounded float-left" 
+          style="--xPos: 0; --yPos: -0.11; --scaled: 0.5; width: 100%; height: 100%; object-fit: cover; z-index: 2; position: absolute;">
+          
+      <img src="./assets/images/Commencement_overview.jpeg" class="item rounded float-left" 
+          style="--xPos: -0.12; --yPos: 0.13; width: 75%; height: 65%; object-fit: cover; position: absolute;">
+
+      <div class="item text-dark card" 
+          style="position: absolute; --xPos: 0.12; --yPos: 0; width: 160px; height: 200px;">
+            Lorem Ipsum
+      </div>
     </div>
-    
   </div>
+
   <div class="bubble bg-primary text-white rounded-circle d-flex justify-content-center align-items-center"
       style="width: 150px; height: 150px; --xPos: 0.25; --yPos: 0.7;">
-    <div class="inner-circle bg-white rounded-circle" style="width: 125px; height: 125px;"></div>
+
+    <div class="inner-mask inner-circle bg-white rounded-circle d-flex justify-content-center align-items-center" 
+        style="width: 86%; height: 86%; position: relative;">
+
+      <img src="./assets/images/Commencement.jpeg" class="item rounded float-left" 
+          style="--xPos: -0.15; --yPos: -0.15; width: 100%; height: 100%; object-fit: cover; z-index: 2; position: absolute;">
+          
+      <img src="./assets/images/Commencement_overview.jpeg" class="item rounded float-left" 
+          style="--xPos: -0.15; --yPos: 0.15; width: 100%; height: 90%; object-fit: cover; position: absolute;">
+
+      <div class="item text-dark card" 
+          style="position: absolute; --xPos: 0.15; --yPos: 0; width: 120px; height: 150px;">
+            Lorem Ipsum
+      </div>
+    </div>
   </div>
+
   <div class="bubble bg-primary text-white rounded-circle d-flex justify-content-center align-items-center"
-      style="width: 150px; height: 150px; --xPos: 0.75; --yPos: 0.3;">
-    <div class="inner-circle bg-white rounded-circle" style="width: 125px; height: 125px;"></div>
+      style="width: 150px; height: 150px; --xPos: 0.75; --yPos: 0.2;">
+
+    <div class="inner-mask inner-circle bg-white rounded-circle d-flex justify-content-center align-items-center" 
+        style="width: 86%; height: 86%; position: relative;">
+
+      <img src="./assets/images/Commencement.jpeg" class="item rounded float-left" 
+          style="--xPos: -0.15; --yPos: -0.15; width: 100%; height: 100%; object-fit: cover; z-index: 2; position: absolute;">
+          
+      <img src="./assets/images/Commencement_overview.jpeg" class="item rounded float-left" 
+          style="--xPos: -0.15; --yPos: 0.15; width: 100%; height: 90%; object-fit: cover; position: absolute;">
+
+      <div class="item text-dark card" 
+          style="position: absolute; --xPos: 0.15; --yPos: 0; width: 120px; height: 150px;">
+            Lorem Ipsum
+      </div>
+    </div>
   </div>
+
   <div class="bubble bg-primary text-white rounded-circle d-flex justify-content-center align-items-center"
-      style="width: 150px; height: 150px; --xPos: 0.8; --yPos: 0.75;">
-    <div class="inner-circle bg-white rounded-circle" style="width: 125px; height: 125px;"></div>
+      style="width: 150px; height: 150px; --xPos: 0.8; --yPos: 0.5;">
+
+    <div class="inner-mask inner-circle bg-white rounded-circle d-flex justify-content-center align-items-center" 
+        style="width: 86%; height: 86%; position: relative;">
+
+      <img src="./assets/images/Commencement.jpeg" class="item rounded float-left" 
+          style="--xPos: -0.15; --yPos: -0.15; width: 100%; height: 100%; object-fit: cover; z-index: 2; position: absolute;">
+          
+      <img src="./assets/images/Commencement_overview.jpeg" class="item rounded float-left" 
+          style="--xPos: -0.15; --yPos: 0.15; width: 100%; height: 90%; object-fit: cover; position: absolute;">
+
+      <div class="item text-dark card" 
+          style="position: absolute; --xPos: 0.15; --yPos: 0; width: 120px; height: 150px;">
+            Lorem Ipsum
+      </div>
+    </div>
   </div>
+
+  <div class="bubble bg-primary text-white rounded-circle d-flex justify-content-center align-items-center"
+      style="width: 150px; height: 150px; --xPos: 0.4; --yPos: 0.5;">
+
+    <div class="inner-mask inner-circle bg-white rounded-circle d-flex justify-content-center align-items-center" 
+        style="width: 86%; height: 86%; position: relative;">
+
+      <img src="./assets/images/Commencement.jpeg" class="item rounded float-left" 
+          style="--xPos: -0.15; --yPos: -0.15; width: 100%; height: 100%; object-fit: cover; z-index: 2; position: absolute;">
+          
+      <img src="./assets/images/Commencement_overview.jpeg" class="item rounded float-left" 
+          style="--xPos: -0.15; --yPos: 0.15; width: 100%; height: 90%; object-fit: cover; position: absolute;">
+
+      <div class="item text-dark card" 
+          style="position: absolute; --xPos: 0.15; --yPos: 0; width: 120px; height: 150px;">
+            Lorem Ipsum
+      </div>
+    </div>
+  </div>
+
 
   <script>
     // Simple Perlin noise generator
@@ -92,6 +178,12 @@
         item.yPos = item.style.getPropertyValue("--yPos") * bubble.height;
         item.xNow = 0;
         item.yNow = 0;
+        item.size = 1;
+        if(item.classList.contains("thumb")){
+          item.scalar = parseFloat(item.style.getPropertyValue("--scaled"));
+        } else {
+          item.scalar = 1;
+        }
       }
       console.log(bubble.items);
     }
@@ -100,14 +192,16 @@
       for(const bubble of bubbles) {
         if(bubble.matches(':hover')){
           bubble.style.setProperty("z-index", 10);
-          mult = 4;
+          mult = 6 - bubble.height/75;
         } else {
           bubble.style.setProperty("z-index", 1);
           mult = 1;
         }
-        bubble.xNoise = bubble.xPos + perlin.noise(bubble.t) * 200;
+        bubble.xNoise = bubble.xPos + perlin.noise(bubble.t) * 150;
 
         bubble.yPos -= bubble.ySpeed / mult; // upward speed
+
+        bubble.size += (mult  - bubble.size) / 7;
 
         // Reset if the bubble floats off the top
         if (bubble.yPos < -bubble.height) {
@@ -124,11 +218,11 @@
             item.xNow += (-item.xNow) / 7;
             item.yNow += (-item.yNow) / 7;
           }
-          item.style.transform = `translate(${item.xNow}%, ${item.yNow}%)`;
-          console.log(item.xPos);
+          item.size = (1/(bubble.size/2+0.5)+0.02) * (1 - item.scalar * (item.yNow / item.yPos));
+          
+          item.style.transform = `translate(${item.xNow}%, ${item.yNow}%) scale(${item.size})`;
         }
 
-        bubble.size += (mult  - bubble.size) / 7;
 
         bubble.style.transform = `translate(calc(-50% + ${bubble.xNoise}px), ${bubble.yPos}px) scale(${bubble.size})`;
 
@@ -137,7 +231,7 @@
 
         
 
-        bubble.t += 0.001 / mult;
+        bubble.t += 0.0015 / mult;
       }
       requestAnimationFrame(animate);
     }
