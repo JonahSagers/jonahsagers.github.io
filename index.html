@@ -39,13 +39,13 @@
         style="width: 86%; height: 86%; position: relative;">
 
       <img src="./assets/images/Commencement.jpeg" class="item thumb rounded float-left" 
-          style="--xPos: 0; --yPos: -0.11; --scaled: 0.5; width: 100%; height: 100%; object-fit: cover; z-index: 2; position: absolute;">
+          style="--xPos: -0.09; --yPos: -0.08; --scaled: 0.75; width: 100%; height: 100%; object-fit: cover; z-index: 2; position: absolute;">
           
       <img src="./assets/images/Commencement_overview.jpeg" class="item rounded float-left" 
           style="--xPos: -0.12; --yPos: 0.13; width: 75%; height: 65%; object-fit: cover; position: absolute;">
 
       <div class="item text-dark card" 
-          style="position: absolute; --xPos: 0.12; --yPos: 0; width: 160px; height: 200px;">
+          style="position: absolute; --xPos: 0.11; --yPos: 0; width: 160px; height: 200px;">
             Lorem Ipsum
       </div>
     </div>
@@ -218,7 +218,13 @@
             item.xNow += (-item.xNow) / 7;
             item.yNow += (-item.yNow) / 7;
           }
-          item.size = (1/(bubble.size/2+0.5)+0.02) * (1 - item.scalar * (item.yNow / item.yPos));
+          //not entirely sure why, but the updated scaling function would break text objects specifically
+          if(item.scalar != 1){
+            item.size = (1/(bubble.size/2+0.5)+0.02) * (1 - (1 - item.scalar) * (item.yNow / item.yPos));
+          } else {
+            item.size = 1/(bubble.size/2+0.5)+0.02;
+          }
+          
           
           item.style.transform = `translate(${item.xNow}%, ${item.yNow}%) scale(${item.size})`;
         }
