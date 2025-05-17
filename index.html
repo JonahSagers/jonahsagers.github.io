@@ -52,16 +52,16 @@
   </div>
 
   <div class="bubble bg-primary text-white rounded-circle d-flex justify-content-center align-items-center"
-      style="width: 150px; height: 150px; --xPos: 0.25; --yPos: 0.7;">
+      style="width: 250px; height: 250px; --xPos: 0.25; --yPos: 0.7;">
 
     <div class="inner-mask inner-circle bg-white rounded-circle d-flex justify-content-center align-items-center" 
         style="width: 86%; height: 86%; position: relative;">
 
-      <img src="./assets/images/Commencement.jpeg" class="item rounded float-left" 
-          style="--xPos: -0.15; --yPos: -0.15; width: 100%; height: 100%; object-fit: cover; z-index: 2; position: absolute;">
+      <img src="./assets/images/Kent_State_Physical.png" class="item thumb rounded float-left" 
+          style="--xPos: -0.1; --yPos: -0.1; --scaled: 0.75; width: 100%; height: 100%; object-fit: cover; z-index: 2; position: absolute;">
           
-      <img src="./assets/images/Commencement_overview.jpeg" class="item rounded float-left" 
-          style="--xPos: -0.15; --yPos: 0.15; width: 100%; height: 90%; object-fit: cover; position: absolute;">
+      <img src="./assets/images/Kent_State_Physical.png" class="item rounded float-left" 
+          style="--xPos: -0.15; --yPos: 0.15; width: 80%; height: 80%; object-fit: cover; position: absolute;">
 
       <div class="item text-dark card" 
           style="position: absolute; --xPos: 0.15; --yPos: 0; width: 120px; height: 150px;">
@@ -204,8 +204,13 @@
         bubble.size += (mult  - bubble.size) / 7;
 
         // Reset if the bubble floats off the top
-        if (bubble.yPos < -bubble.height) {
+        if(bubble.yPos < -bubble.height) {
           bubble.yPos = window.innerHeight;
+        }
+        if(mult > 1 && bubble.yPos > window.innerHeight - (bubble.height * bubble.size / 1.5)){
+          bubble.yPos += (window.innerHeight - (bubble.height * bubble.size / 1.5) - bubble.yPos)/20;
+        } else if(mult > 1 && bubble.yPos < bubble.height * bubble.size / 3){
+          bubble.yPos += ((bubble.height * bubble.size / 3) - bubble.yPos)/20;
         }
 
         for(const item of bubble.items){
