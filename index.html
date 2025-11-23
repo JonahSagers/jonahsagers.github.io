@@ -18,6 +18,17 @@
       left: 50%;
       transform: translate(-50%, 0);
     }
+    /* Prevent text/image selection inside bubbles so pointer dragging is uninterrupted */
+    .bubble, .bubble * {
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+      -webkit-touch-callout: none;
+    }
+    .bubble img {
+      -webkit-user-drag: none;
+    }
     .inner-mask {
       width: 100%;
       height: 100%;
@@ -190,7 +201,84 @@
         } else {
           item.scalar = 1;
         }
+        // Prevent browser selection/drag of inner content so pointer dragging always starts on the bubble
+        try {
+          item.draggable = false;
+        } catch (e) {}
+        item.addEventListener('dragstart', (ev) => ev.preventDefault());
       }
+      // setup dragging/inertia state
+      bubble.style.touchAction = 'none'; // allow pointer events to handle pan
+      bubble.isDragging = false;
+      bubble.dragBlend = 0; // 0 = no drag influence, 1 = fully controlled by drag/inertia
+      bubble.velocity = {x:0, y:0};
+      bubble._lastPositions = [];
+
+      // pointer handlers
+      bubble.addEventListener('pointerdown', (e) => {
+        bubble.setPointerCapture(e.pointerId);
+        bubble.isDragging = true;
+        bubble.dragBlend = 1;
+        // starting offset mapping: translate center-based xNoise to clientX
+        const rect = bubble.getBoundingClientRect();
+        // pointer-based center
+        bubble._dragOffset = {x: e.clientX - (window.innerWidth/2 + (bubble.xNoise || 0)), y: e.clientY - bubble.yPos};
+        bubble._lastPositions = [{t: performance.now(), x: e.clientX, y: e.clientY}];
+      });
+
+      bubble.addEventListener('pointermove', (e) => {
+        if(!bubble.isDragging) return;
+        const now = performance.now();
+        // map pointer to scene coordinates
+        const clientX = e.clientX;
+        const clientY = e.clientY;
+
+        // compute target xNoise (pixels from center)
+        const targetXNoise = clientX - window.innerWidth/2 - bubble._dragOffset.x;
+        // immediate update so the user sees follow
+        bubble.xNoise = targetXNoise;
+        bubble.yPos = clientY - bubble._dragOffset.y;
+
+        // store last positions for velocity calc (keep ~100ms)
+        bubble._lastPositions.push({t: now, x: clientX, y: clientY});
+        while(bubble._lastPositions.length > 5 || (now - bubble._lastPositions[0].t) > 120){
+          bubble._lastPositions.shift();
+        }
+      });
+
+      function endDrag(e){
+        if(!bubble.isDragging) return;
+        bubble.isDragging = false;
+        const now = performance.now();
+        const positions = bubble._lastPositions;
+        if(positions.length >= 2){
+          const first = positions[0];
+          const last = positions[positions.length - 1];
+          const dt = Math.max(1, last.t - first.t);
+          // px per ms
+          const vx = (last.x - first.x) / dt;
+          const vy = (last.y - first.y) / dt;
+          // convert to px per frame approx (assuming 16ms frame)
+          bubble.velocity.x = vx * 16;
+          bubble.velocity.y = vy * 16;
+        }
+        // Update the bubble's resting base so it doesn't snap back to Perlin position
+        // Compute a new xPos such that perlin.x + noise == current xNoise
+        try {
+          if(typeof bubble.xNoise === 'number'){
+            bubble.xPos = bubble.xNoise - perlin.noise(bubble.t) * 150;
+          }
+        } catch (err) {
+          // ignore if perlin isn't available for some reason
+        }
+
+        bubble._lastPositions = [];
+      }
+
+      bubble.addEventListener('pointerup', endDrag);
+      bubble.addEventListener('pointercancel', endDrag);
+      bubble.addEventListener('lostpointercapture', endDrag);
+
       console.log(bubble.items);
     }
 
@@ -203,21 +291,68 @@
           bubble.style.setProperty("z-index", 1);
           mult = 1;
         }
-        bubble.xNoise = bubble.xPos + perlin.noise(bubble.t) * 150;
+        // compute perlin float position
+        const perlinX = bubble.xPos + perlin.noise(bubble.t) * 150;
+        const perlinYSpeed = bubble.ySpeed / mult;
 
-        bubble.yPos -= bubble.ySpeed / mult; // upward speed
+        // If dragging, we override positions. If inertia running, we advance using velocity and decay it.
+        if(bubble.isDragging){
+          // while dragging, xNoise/yPos are set in pointermove handler
+          // keep perlin t progression slowed so motion looks natural
+          bubble.t += 0.0005 / mult;
+        } else if(bubble.dragBlend > 0){
+          // apply inertia: update positions by velocity
+          bubble.xNoise = (bubble.xNoise || perlinX) + bubble.velocity.x;
+          bubble.yPos = bubble.yPos + bubble.velocity.y;
+
+          // decay velocity (exponential)
+          const decay = 0.95; // per frame multiplier
+          bubble.velocity.x *= decay;
+          bubble.velocity.y *= decay;
+
+          // blend drag influence down over time so perlin returns control
+          bubble.dragBlend *= 0.96;
+          if(Math.hypot(bubble.velocity.x, bubble.velocity.y) < 0.05) bubble.dragBlend = 0;
+
+          // when blend is low, start re-aligning to perlin
+          if(bubble.dragBlend <= 0.01){
+            bubble.dragBlend = 0;
+            // let perlin resume gradually by aligning xNoise/yPos to perlin positions
+            bubble.xNoise = perlinX;
+          } else {
+            // mix perlin and inertia for smooth handoff
+            bubble.xNoise = bubble.xNoise * bubble.dragBlend + perlinX * (1 - bubble.dragBlend);
+          }
+
+          // advance perlin time mildly while inertia continues
+          bubble.t += 0.001 / mult;
+        } else {
+          // normal floating
+          bubble.xNoise = perlinX;
+          bubble.yPos -= perlinYSpeed; // upward speed
+        }
 
         bubble.size += (mult  - bubble.size) / 7;
 
-        // Reset if the bubble floats off the top
-        if(bubble.yPos < -bubble.height) {
-          bubble.yPos = window.innerHeight;
+        // Reset if the bubble floats off the top (only if not currently being dragged)
+        if(!bubble.isDragging){
+          if(bubble.yPos < -bubble.height) {
+            bubble.yPos = window.innerHeight;
+          }
+          if(mult > 1 && bubble.yPos > window.innerHeight - (bubble.height * bubble.size / 1.5)){
+            bubble.yPos += (window.innerHeight - (bubble.height * bubble.size / 1.5) - bubble.yPos)/20;
+          } else if(mult > 1 && bubble.yPos < bubble.height * bubble.size / 3){
+            bubble.yPos += ((bubble.height * bubble.size / 3) - bubble.yPos)/20;
+          }
+          if(bubble.xPos < -window.innerWidth / 2 + (bubble.height * bubble.size / 2)){
+            bubble.xPos += (-window.innerWidth / 2 + (bubble.height * bubble.size / 2) - bubble.xPos) / 20;
+          } else if(bubble.xPos > window.innerWidth / 2 - (bubble.height * bubble.size / 2)){
+            bubble.xPos += (window.innerWidth / 2 - (bubble.height * bubble.size / 2) - bubble.xPos) / 20;
+          }
+        } else {
+          console.log((-window.innerWidth / 2 - (bubble.height * bubble.size / 1.5) - bubble.xPos) / 20);
         }
-        if(mult > 1 && bubble.yPos > window.innerHeight - (bubble.height * bubble.size / 1.5)){
-          bubble.yPos += (window.innerHeight - (bubble.height * bubble.size / 1.5) - bubble.yPos)/20;
-        } else if(mult > 1 && bubble.yPos < bubble.height * bubble.size / 3){
-          bubble.yPos += ((bubble.height * bubble.size / 3) - bubble.yPos)/20;
-        }
+        
 
         for(const item of bubble.items){
           //using a square ease multiplies with the parent and creates a cubic
@@ -241,14 +376,17 @@
         }
 
 
-        bubble.style.transform = `translate(calc(-50% + ${bubble.xNoise}px), ${bubble.yPos}px) scale(${bubble.size})`;
+  bubble.style.transform = `translate(calc(-50% + ${bubble.xNoise}px), ${bubble.yPos}px) scale(${bubble.size})`;
 
         // bubble.style.setProperty("--xPos", bubble.xNoise);
         // bubble.style.setProperty("--yPos", bubble.yPos);
 
         
 
-        bubble.t += 0.0015 / mult;
+        // advance the perlin time normally when not dominated by dragging/inertia
+        if(!bubble.isDragging && bubble.dragBlend === 0){
+          bubble.t += 0.0015 / mult;
+        }
       }
       requestAnimationFrame(animate);
     }
