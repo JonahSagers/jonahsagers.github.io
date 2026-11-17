@@ -1,0 +1,141 @@
+html, body {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  background: #f0f8ff;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+#bubble-field {
+  position: fixed;
+  inset: 0;
+}
+
+/* ─── Bubble shell ─────────────────────────────────────────────── */
+.bubble {
+  --d: 180px;              /* diameter, set per bubble from JS */
+  --rim: #dc3545;          /* rim colour, set per bubble from JS */
+  --open-mask: 560px;      /* inner circle diameter when fully open, set from JS */
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: var(--d);
+  height: var(--d);
+  margin: calc(var(--d) / -2) 0 0 calc(var(--d) / -2); /* center on (x, y) */
+  border-radius: 50%;
+  background: var(--rim);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.15);
+  z-index: 1;
+}
+.bubble.open { z-index: 10; }
+
+.bubble .mask {
+  position: relative;
+  width: 90%;
+  height: 90%;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #fff;
+}
+
+/* ─── Contents ────────────────────────────────────────────────────
+   Open-state content is laid out in px from the bubble's center using
+   --open-mask (the layout size), which is a bit larger than the bubble
+   actually opens to — so outer corners get clipped by the circle. */
+.bubble .cover,
+.bubble .detail {
+  position: absolute;
+  transition: all 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.bubble img {
+  object-fit: cover;
+  border-radius: 6%;
+}
+
+/* closed: cover fills the circle, everything else hidden */
+.bubble .cover  { left: 0; top: 0; width: 100%; height: 100%; border-radius: 0; z-index: 2; }
+.bubble .detail { left: calc(50% - var(--open-mask) * 0.36);
+                  top:  calc(50% + var(--open-mask) * 0.02);
+                  width: calc(var(--open-mask) * 0.38);
+                  height: calc(var(--open-mask) * 0.30); opacity: 0; }
+/* text is laid out at its final, fully-open size (fixed px, never scaled),
+   anchored to the bubble's center, and simply fades in */
+.bubble .info   { position: absolute;
+                  left: calc(50% + var(--open-mask) * 0.06);
+                  top:  calc(50% - var(--open-mask) * 0.28);
+                  width: calc(var(--open-mask) * 0.34);
+                  height: calc(var(--open-mask) * 0.58);
+                  opacity: 0; transition: opacity 0.3s ease;
+                  font-size: 14px; line-height: 1.35; color: #222;
+                  display: flex; flex-direction: column; justify-content: center; }
+.bubble .info h2 { font-size: 1.2em; margin: 0 0 0.4em; }
+.bubble .info p  { margin: 0; }
+
+/* open: cover moves top-left, detail bottom-left, text right */
+.bubble.open .cover  { left: calc(50% - var(--open-mask) * 0.36);
+                       top:  calc(50% - var(--open-mask) * 0.32);
+                       width: calc(var(--open-mask) * 0.38);
+                       height: calc(var(--open-mask) * 0.30); border-radius: 6%; }
+.bubble.open .detail { opacity: 1; }
+.bubble.open .info   { opacity: 1; transition-delay: 0.1s; }
+
+/* no detail image: cover takes the whole left column */
+.bubble.no-detail.open .cover { top: calc(50% - var(--open-mask) * 0.28);
+                                height: calc(var(--open-mask) * 0.56); }
+
+@media (prefers-reduced-motion: reduce) {
+  .bubble .cover, .bubble .detail, .bubble .info { transition: none; }
+}
+
+/* ─── Center card ──────────────────────────────────────────────── */
+/* z-index 5: above closed bubbles (1), below open bubbles (10) */
+.center-card {
+  position: fixed;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  transform: translateX(-50%);
+  width: 30vw;
+  min-width: 260px;
+  box-sizing: border-box;
+  padding: 2rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 5;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 0 30px rgba(0, 0, 0, 0.12);
+}
+.center-card h1 {
+  margin: 0 0 1rem;
+  font-size: clamp(1.5rem, 3vw, 2.25rem);
+  color: #222;
+}
+.center-card .links {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 1.0rem;
+  width: min(250px, 100%);
+}
+.center-card .links a {
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  background: #222;
+  color: #fff;
+  text-decoration: none;
+  font-weight: 600;
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+.center-card .links a:hover,
+.center-card .links a:focus-visible {
+  background: #0d6efd;
+  transform: translateY(-2px);
+}
