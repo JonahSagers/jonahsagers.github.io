@@ -43,6 +43,7 @@ function createBubble(project, i) {
     el("div", { className: "info" }, [
       el("h2", { textContent: project.title }),
       el("p", { textContent: project.text }),
+      ...(project.awards?.trim() ? [el("p", { className: "awards", textContent: project.awards })] : []),
     ]),
   ]);
 
@@ -53,8 +54,11 @@ function createBubble(project, i) {
   node.style.setProperty("--rim", color);
   field.append(node);
 
+  const category = Object.keys(CATEGORIES)
+    .find(k => CATEGORIES[k].toLowerCase() === color.toLowerCase());
+
   const b = {
-    node, project, size,
+    node, project, size, category,
     // anchor x as fraction of width so it survives resizes
     xFrac: project.x ?? randomSideX(),
     y: (project.y ?? rand(0, 1)) * innerHeight,
@@ -82,8 +86,39 @@ function createBubble(project, i) {
 const bubbles = PROJECTS.map(createBubble);
 document.addEventListener("click", () => bubbles.forEach(b => (b.pinned = false)));
 
+// ─── Category filter ────────────────────────────────────────────────────────
+// Clicking a category dims bubbles of other colours; clicking it again clears.
+let activeCategory = null;
+const filterButtons = document.querySelectorAll(".interest-buttons button");
+
+filterButtons.forEach(btn => {
+  const color = CATEGORIES[btn.dataset.category];
+  if (color) btn.style.setProperty("--cat", color);
+  btn.setAttribute("aria-pressed", "false");
+
+  btn.addEventListener("click", e => {
+    e.stopPropagation();
+    activeCategory = activeCategory === btn.dataset.category ? null : btn.dataset.category;
+    applyFilter();
+  });
+});
+
+function applyFilter() {
+  filterButtons.forEach(btn => {
+    const on = btn.dataset.category === activeCategory;
+    btn.classList.toggle("active", on);
+    btn.setAttribute("aria-pressed", String(on));
+  });
+  for (const b of bubbles) {
+    const dim = activeCategory != null && b.category !== activeCategory;
+    b.node.classList.toggle("dimmed", dim);
+    b.node.tabIndex = dim ? -1 : 0;
+    if (dim) b.pinned = b.hovered = false;
+  }
+}
+
 // ─── Animation ──────────────────────────────────────────────────────────────
-const isOpen = b => b.hovered || b.pinned;
+const isOpen = b => !b.node.classList.contains("dimmed") && (b.hovered || b.pinned);
 const layoutDiameter = () => Math.min(CONFIG.openDiameter, Math.min(innerWidth, innerHeight) * 0.92);
 const openScale = b => Math.max(1, (layoutDiameter() * CONFIG.openShrink) / b.size);
 
