@@ -11,12 +11,32 @@
 
   <!-- Center card -->
   <section class="center-card">
+    <!-- Drop a photo at assets/images/profile.jpg (square works best) -->
+    <div class="photo">
+      <img src="./assets/images/profile.jpeg" alt="Jonah Sagers" onerror="this.remove()">
+    </div>
     <h1>Jonah Sagers</h1>
     <nav class="links">
-      <a href="https://github.com/JonahSagers" target="_blank" rel="noopener">GitHub</a>
-      <a href="https://www.linkedin.com/in/jonah-sagers/" target="_blank" rel="noopener">LinkedIn</a>
-      <a href="https://jonahsagers.itch.io" target="_blank" rel="noopener">itch.io</a>
+      <!-- Icons: drop PNGs into assets/images/icons/ with these names -->
+      <a href="https://github.com/JonahSagers" target="_blank" rel="noopener">
+        <span class="icon"><img src="./assets/images/icons/github.png" alt="" onerror="this.remove()"></span>GitHub
+      </a>
+      <a href="https://www.linkedin.com/in/jonah-sagers/" target="_blank" rel="noopener">
+        <span class="icon"><img src="./assets/images/icons/linkedin.png" alt="" onerror="this.remove()"></span>LinkedIn
+      </a>
+      <a href="https://jonahsagers.itch.io" target="_blank" rel="noopener">
+        <span class="icon"><img src="./assets/images/icons/itchio.png" alt="" onerror="this.remove()"></span>itch.io
+      </a>
     </nav>
+
+    <div class="interests">
+      <h2>What are you looking for?</h2>
+      <div class="interest-buttons">
+        <button type="button" data-category="games">Game Development</button>
+        <button type="button" data-category="software">Software Projects</button>
+        <button type="button" data-category="other">Other Experience</button>
+      </div>
+    </div>
   </section>
 
   <!-- Project data: add/edit bubbles in projects.js -->

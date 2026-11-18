@@ -32,6 +32,14 @@ html, body {
 }
 .bubble.open { z-index: 10; }
 
+/* filtered out by the category buttons */
+.bubble { transition: opacity 0.3s ease, filter 0.3s ease; }
+.bubble.dimmed {
+  opacity: 0.2;
+  filter: grayscale(1);
+  pointer-events: none;
+}
+
 .bubble .mask {
   position: relative;
   width: 90%;
@@ -73,6 +81,7 @@ html, body {
                   display: flex; flex-direction: column; justify-content: center; }
 .bubble .info h2 { font-size: 1.2em; margin: 0 0 0.4em; }
 .bubble .info p  { margin: 0; }
+.bubble .info .awards { margin-top: 0.6em; font-weight: 600; font-style: italic; color: var(--rim); }
 
 /* open: cover moves top-left, detail bottom-left, text right */
 .bubble.open .cover  { left: calc(50% - var(--open-mask) * 0.36);
@@ -87,7 +96,7 @@ html, body {
                                 height: calc(var(--open-mask) * 0.56); }
 
 @media (prefers-reduced-motion: reduce) {
-  .bubble .cover, .bubble .detail, .bubble .info { transition: none; }
+  .bubble, .bubble .cover, .bubble .detail, .bubble .info { transition: none; }
 }
 
 /* ─── Center card ──────────────────────────────────────────────── */
@@ -113,6 +122,23 @@ html, body {
   -webkit-backdrop-filter: blur(8px);
   box-shadow: 0 0 30px rgba(0, 0, 0, 0.12);
 }
+.center-card .photo {
+  width: min(220px, 60%);
+  aspect-ratio: 1;
+  margin-bottom: 1.25rem;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #e3e8ee;          /* placeholder until a photo is added */
+  border: 2px dashed #b8c2cc;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.12);
+}
+.center-card .photo:has(img) { border: none; }
+.center-card .photo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
 .center-card h1 {
   margin: 0 0 1rem;
   font-size: clamp(1.5rem, 3vw, 2.25rem);
@@ -134,8 +160,67 @@ html, body {
   font-weight: 600;
   transition: transform 0.15s ease, background 0.15s ease;
 }
+/* Icon sits in the left padding, out of the flow, so button size and
+   centered text are exactly as before. */
+.center-card .links a { position: relative; }
+.center-card .links .icon {
+  position: absolute;
+  left: 0.6rem;
+  top: 50%;
+  width: 1.25em;
+  height: 1.25em;
+  transform: translateY(-50%);
+  display: grid;
+  place-items: center;
+}
+.center-card .links .icon:empty {   /* placeholder until an icon is added */
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+}
+.center-card .links .icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
 .center-card .links a:hover,
 .center-card .links a:focus-visible {
   background: #0d6efd;
+  transform: translateY(-2px);
+}
+
+/* ─── "What are you looking for?" ─────────────────────────────── */
+.center-card .interests {
+  margin-top: 2rem;
+  width: min(250px, 100%);
+}
+.center-card .interests h2 {
+  margin: 0 0 0.75rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #444;
+}
+.center-card .interest-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.center-card .interest-buttons button {
+  --cat: #0d6efd;          /* category colour, set from JS */
+  padding: 0.5rem 1rem;
+  border: 2px solid #222;
+  border-radius: 999px;
+  background: transparent;
+  color: #222;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.15s ease, background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+.center-card .interest-buttons button:hover,
+.center-card .interest-buttons button:focus-visible,
+.center-card .interest-buttons button.active {
+  background: var(--cat);
+  border-color: var(--cat);
+  color: #fff;
   transform: translateY(-2px);
 }
