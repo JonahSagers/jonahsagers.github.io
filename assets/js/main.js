@@ -33,8 +33,27 @@ function el(tag, props = {}, children = []) {
   return node;
 }
 
+// Returns an absolute http(s) URL, or null if the string isn't a usable link.
+// Relative paths (e.g. "./demos/game/") resolve against this site.
+function validUrl(str) {
+  if (typeof str !== "string" || !str.trim()) return null;
+  try {
+    const url = new URL(str.trim(), location.href);
+    return url.protocol === "http:" || url.protocol === "https:" ? url.href : null;
+  } catch {
+    return null;
+  }
+}
+
+// github.com repos/gists are source code; *.github.io pages are live demos.
+const isGitHub = url => {
+  const host = new URL(url).hostname;
+  return host === "github.com" || host.endsWith(".github.com");
+};
+
 function createBubble(project, i) {
   const size = project.size || CONFIG.defaultSize;
+  const link = validUrl(project.link);
   const color = project.color || PALETTE[i % PALETTE.length];
 
   const mask = el("div", { className: "mask" }, [
@@ -44,12 +63,14 @@ function createBubble(project, i) {
       el("h2", { textContent: project.title }),
       el("p", { textContent: project.text }),
       ...(project.awards?.trim() ? [el("p", { className: "awards", textContent: project.awards })] : []),
+      ...(link ? [el("p", { className: "link", textContent: isGitHub(link) ? "Click for source" : "Click for demo" })] : []),
     ]),
   ]);
 
   const node = el("article", { className: "bubble", tabIndex: 0 }, [mask]);
   node.setAttribute("aria-label", project.title);
   if (!project.detail) node.classList.add("no-detail");
+  if (link) node.classList.add("has-link");
   node.style.setProperty("--d", `${size}px`);
   node.style.setProperty("--rim", color);
   field.append(node);
@@ -75,9 +96,16 @@ function createBubble(project, i) {
   node.addEventListener("blur", () => (b.hovered = false));
   node.addEventListener("click", e => {
     e.stopPropagation();
-    if (isOpen(b) && project.link) return window.open(project.link, "_blank");
+    // open bubble with a link acts as a button (on touch: 1st tap opens, 2nd launches)
+    if (isOpen(b) && link) return window.open(link, "_blank", "noopener");
     bubbles.forEach(o => o !== b && (o.pinned = false));
     b.pinned = !b.pinned; // tap-to-open for touch screens
+  });
+  node.addEventListener("keydown", e => {
+    if (link && (e.key === "Enter" || e.key === " ")) {
+      e.preventDefault();
+      window.open(link, "_blank", "noopener");
+    }
   });
 
   return b;
@@ -142,11 +170,12 @@ function animate() {
     const target = open ? openScale(b) : 1;
     b.node.classList.toggle("open", open);
 
-    // slow down drift while open
-    const slow = open ? target : 1;
     b.scale += (target - b.scale) * CONFIG.ease;
-    b.y -= b.speed / slow;
-    b.t += CONFIG.wobbleSpeed / slow;
+    // freeze drift and wobble entirely while open
+    if (!open) {
+      b.y -= b.speed;
+      b.t += CONFIG.wobbleSpeed;
+    }
 
     const half = (b.size * b.scale) / 2;
 

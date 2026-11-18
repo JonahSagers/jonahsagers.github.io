@@ -81,6 +81,7 @@ html, body {
                   display: flex; flex-direction: column; justify-content: center; }
 .bubble .info h2 { font-size: 1.2em; margin: 0 0 0.4em; }
 .bubble .info p  { margin: 0; }
+.bubble .info .link { margin-top: 0.8em; font-weight: 600; color: #0d6efd; }
 .bubble .info .awards { margin-top: 0.6em; font-weight: 600; font-style: italic; color: var(--rim); }
 
 /* open: cover moves top-left, detail bottom-left, text right */
