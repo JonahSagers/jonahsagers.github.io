@@ -48,7 +48,7 @@ const PROJECTS = [
     detail: "./assets/images/TechieCamp.jpeg",
     color: "#dc3545",
     size: 150,
-    x: 0.85, y: 0.4,
+    x: 0.86, y: 0.25,
   },
   {
     title: "Cognitive Robotics @ Kent State",
@@ -73,6 +73,17 @@ const PROJECTS = [
     x: 0.3, y: 0.4,
   },
   {
+    title: "AgilityForge",
+    text: "Open die incremental forging simulation, built for NSF and used in Columbus Metro Schools curriculum!",
+    awards: "Featured in STEM Magazine!",
+    link: "https://stemmagazine.com/gMAY26/viewer/desktop/#page/10",
+    cover: "./assets/images/AgilityMetro.png",
+    detail: "./assets/images/AgilityScreen.png",
+    color: "#0d6efd",
+    size: 250,
+    x: 0.7, y: 0.35,
+  },
+  {
     title: "Counter Melody",
     text: "Competitive rhythm game that taught me how to implement lockstep multiplayer!",
     awards: "GCC Game Jam Winner",
@@ -81,7 +92,7 @@ const PROJECTS = [
     detail: "./assets/images/CounterMelody.png",
     color: "#73e380",
     size: 225,
-    x: 0.78, y: 0.55,
+    x: 0.8, y: 0.6,
   },
   {
     title: "Stick Kin",
