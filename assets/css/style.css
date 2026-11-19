@@ -69,15 +69,17 @@ html, body {
                   top:  calc(50% + var(--open-mask) * 0.02);
                   width: calc(var(--open-mask) * 0.38);
                   height: calc(var(--open-mask) * 0.30); opacity: 0; }
-/* text is laid out at its final, fully-open size (fixed px, never scaled),
-   anchored to the bubble's center, and simply fades in */
+/* text is laid out at its final, fully-open size (never scaled while
+   opening), anchored to the bubble's center, and simply fades in.
+   Font size follows --open-mask so text fits when the window is small:
+   14px at the full 558px mask (620 × 0.9). */
 .bubble .info   { position: absolute;
                   left: calc(50% + var(--open-mask) * 0.06);
                   top:  calc(50% - var(--open-mask) * 0.28);
                   width: calc(var(--open-mask) * 0.34);
                   height: calc(var(--open-mask) * 0.58);
                   opacity: 0; transition: opacity 0.3s ease;
-                  font-size: 14px; line-height: 1.35; color: #222;
+                  font-size: calc(var(--open-mask) * 14 / 558); line-height: 1.35; color: #222;
                   display: flex; flex-direction: column; justify-content: center; }
 .bubble .info h2 { font-size: 1.2em; margin: 0 0 0.4em; }
 .bubble .info p  { margin: 0; }

@@ -1,13 +1,15 @@
 // ─── Config ─────────────────────────────────────────────────────────────────
 const CONFIG = {
   defaultSize: 180,     // px, closed diameter when a project doesn't specify one
-  openDiameter: 620,    // px, diameter content is laid out for when open (capped to viewport)
+  openDiameter: 620,    // px, diameter content is laid out for when open, at full scale
+  maxOpenFrac: 0.30,    // an expanded bubble is never wider than this fraction of the window
   openShrink: 0.88,     // open bubble = layout size × this; content keeps its size, edges get clipped
   riseSpeed: [0.2, 0.4],// px/frame range, upward drift
   wobble: 150,          // px, horizontal noise amplitude
   wobbleSpeed: 0.0015,  // noise time step per frame
   ease: 1 / 7,          // size/position easing factor
   cardGap: 12,          // px, min space between bubbles and the center card
+  wrapMargin: 24,       // px, extra space past the bubble edge so its shadow is gone too
 };
 
 // ─── 1D Perlin noise ──────────────────────────────────────────────────────────
@@ -79,10 +81,12 @@ function createBubble(project, i) {
     .find(k => CATEGORIES[k].toLowerCase() === color.toLowerCase());
 
   const b = {
-    node, project, size, category,
+    node, project, category,
+    baseSize: size,   // as written in projects.js (≤ 300px), at full scale
+    size,             // baseSize × window scale, set by setSizes()
     // anchor x as fraction of width so it survives resizes
     xFrac: project.x ?? randomSideX(),
-    y: (project.y ?? rand(0, 1)) * innerHeight,
+    y: (project.y ?? rand(0, 1)) * field.clientHeight,
     t: Math.random() * 100,
     speed: rand(...CONFIG.riseSpeed),
     scale: 1,
@@ -147,22 +151,38 @@ function applyFilter() {
 
 // ─── Animation ──────────────────────────────────────────────────────────────
 const isOpen = b => !b.node.classList.contains("dimmed") && (b.hovered || b.pinned);
-const layoutDiameter = () => Math.min(CONFIG.openDiameter, Math.min(innerWidth, innerHeight) * 0.92);
-const openScale = b => Math.max(1, (layoutDiameter() * CONFIG.openShrink) / b.size);
+// Diameter open content is laid out for. Shrinks with the window so the
+// expanded bubble (layout × openShrink) stays ≤ maxOpenFrac of the width and
+// fits vertically.
+const layoutDiameter = () => Math.min(
+  CONFIG.openDiameter,
+  (innerWidth * CONFIG.maxOpenFrac) / CONFIG.openShrink,
+  innerHeight * 0.92,
+);
+// Closed and open sizes scale together. Closed sizes are ≤ 300px at full
+// scale, always smaller than the open size, so open size is just the layout size.
+const openScale = b => (layoutDiameter() * CONFIG.openShrink) / b.size;
 
 // Text is laid out once at its fully-open size (mask = 90% of the bubble).
-function setOpenSizes() {
+function setSizes() {
+  const layout = layoutDiameter();
+  const k = layout / CONFIG.openDiameter;
   for (const b of bubbles) {
-    b.node.style.setProperty("--open-mask", `${layoutDiameter() * 0.9}px`);
+    b.size = b.baseSize * k;
+    b.lastScale = null; // force --d to be rewritten next frame
+    b.node.style.setProperty("--open-mask", `${layout * 0.9}px`);
   }
 }
-setOpenSizes();
-addEventListener("resize", setOpenSizes);
+setSizes();
+addEventListener("resize", setSizes);
 
 const card = document.querySelector(".center-card");
 
 function animate() {
   const W = innerWidth, H = innerHeight;
+  // wrap against the bubble field itself (not the viewport) so it keeps working
+  // once the page scrolls; read before any style writes to avoid layout thrash
+  const fieldH = field.clientHeight;
   const cardRect = card?.getBoundingClientRect();
 
   for (const b of bubbles) {
@@ -179,9 +199,10 @@ function animate() {
 
     const half = (b.size * b.scale) / 2;
 
-    // wrap around once fully off the top
-    if (b.y < -b.size) {
-      b.y = H + b.size / 2;
+    // as soon as it's fully past the top of the field, reappear just below the bottom
+    if (!open && b.y + half + CONFIG.wrapMargin < 0) {
+      b.y = fieldH + half + CONFIG.wrapMargin;
+      b.x = null; // jump straight to the new column instead of easing across
       if (b.project.x == null) b.xFrac = randomSideX();
     }
 
