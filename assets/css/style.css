@@ -227,3 +227,40 @@ html, body {
   color: #fff;
   transform: translateY(-2px);
 }
+
+/* ─── Portrait (phones): card becomes a compact bar across the top ── */
+@media (orientation: portrait) {
+  /* bubbles live only below the card: the field starts at the card's bottom
+     edge (--card-h set from JS) and clips anything above it */
+  #bubble-field {
+    top: var(--card-h, 0px);
+    overflow: hidden;
+  }
+  .center-card {
+    left: 0;
+    right: 0;
+    bottom: auto;
+    transform: none;
+    width: auto;
+    min-width: 0;
+    padding: 1rem;
+  }
+  .center-card .photo { width: 72px; margin-bottom: 0.5rem; border-radius: 12px; }
+  .center-card h1 { margin-bottom: 0.75rem; font-size: 1.5rem; }
+  .center-card .links {
+    flex-direction: row;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+  }
+  .center-card .links a { padding: 0.4rem 0.75rem 0.4rem 2.1rem; font-size: 0.9rem; }
+  .center-card .interests { margin-top: 1rem; width: 100%; }
+  .center-card .interests h2 { margin-bottom: 0.5rem; font-size: 1rem; }
+  .center-card .interest-buttons {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+  .center-card .interest-buttons button { padding: 0.35rem 0.75rem; font-size: 0.85rem; }
+}

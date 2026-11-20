@@ -3,6 +3,7 @@ const CONFIG = {
   defaultSize: 180,     // px, closed diameter when a project doesn't specify one
   openDiameter: 620,    // px, diameter content is laid out for when open, at full scale
   maxOpenFrac: 0.30,    // an expanded bubble is never wider than this fraction of the window
+  portraitScale: 2,     // bubbles (closed and open) are this much bigger in portrait
   openShrink: 0.88,     // open bubble = layout size × this; content keeps its size, edges get clipped
   riseSpeed: [0.2, 0.4],// px/frame range, upward drift
   wobble: 150,          // px, horizontal noise amplitude
@@ -87,6 +88,7 @@ function createBubble(project, i) {
     // anchor x as fraction of width so it survives resizes
     xFrac: project.x ?? randomSideX(),
     y: (project.y ?? rand(0, 1)) * field.clientHeight,
+    lane: lanes[i], // evenly spaced column used in portrait
     t: Math.random() * 100,
     speed: rand(...CONFIG.riseSpeed),
     scale: 1,
@@ -114,6 +116,25 @@ function createBubble(project, i) {
 
   return b;
 }
+
+// Portrait (phones): the card sits at the top and bubbles rise in evenly
+// spaced lanes across the full width. Lanes are shuffled so neighbouring
+// lanes don't hold neighbouring projects.
+const portrait = matchMedia("(orientation: portrait)");
+const lanes = PROJECTS.map((_, i) => i);
+for (let i = lanes.length - 1; i > 0; i--) {
+  const j = Math.floor(Math.random() * (i + 1));
+  [lanes[i], lanes[j]] = [lanes[j], lanes[i]];
+}
+
+// In portrait the bubble field starts below the card (see style.css), so the
+// field's own top edge is the "top" bubbles wrap at and nothing goes behind it.
+const card = document.querySelector(".center-card");
+const setCardHeight = () =>
+  field.style.setProperty("--card-h", `${card ? card.offsetHeight : 0}px`);
+setCardHeight();
+// field height changed → sizes may need to shrink to fit (runs after setup)
+if (card) new ResizeObserver(() => { setCardHeight(); setSizes(); }).observe(card);
 
 const bubbles = PROJECTS.map(createBubble);
 document.addEventListener("click", () => bubbles.forEach(b => (b.pinned = false)));
@@ -152,12 +173,12 @@ function applyFilter() {
 // ─── Animation ──────────────────────────────────────────────────────────────
 const isOpen = b => !b.node.classList.contains("dimmed") && (b.hovered || b.pinned);
 // Diameter open content is laid out for. Shrinks with the window so the
-// expanded bubble (layout × openShrink) stays ≤ maxOpenFrac of the width and
-// fits vertically.
+// expanded bubble (layout × openShrink) stays ≤ maxOpenFrac of the width
+// (× portraitScale in portrait) and fits in the field vertically.
 const layoutDiameter = () => Math.min(
   CONFIG.openDiameter,
-  (innerWidth * CONFIG.maxOpenFrac) / CONFIG.openShrink,
-  innerHeight * 0.92,
+  (innerWidth * CONFIG.maxOpenFrac * (portrait.matches ? CONFIG.portraitScale : 1)) / CONFIG.openShrink,
+  field.clientHeight * 0.92,
 );
 // Closed and open sizes scale together. Closed sizes are ≤ 300px at full
 // scale, always smaller than the open size, so open size is just the layout size.
@@ -176,14 +197,14 @@ function setSizes() {
 setSizes();
 addEventListener("resize", setSizes);
 
-const card = document.querySelector(".center-card");
-
 function animate() {
-  const W = innerWidth, H = innerHeight;
+  const W = innerWidth;
   // wrap against the bubble field itself (not the viewport) so it keeps working
   // once the page scrolls; read before any style writes to avoid layout thrash
   const fieldH = field.clientHeight;
   const cardRect = card?.getBoundingClientRect();
+  const vertical = portrait.matches;
+  const laneW = W / bubbles.length;
 
   for (const b of bubbles) {
     const open = isOpen(b);
@@ -206,10 +227,14 @@ function animate() {
       if (b.project.x == null) b.xFrac = randomSideX();
     }
 
-    let x = b.xFrac * W + perlin(b.t) * CONFIG.wobble;
+    let x = vertical
+      // wobble ≈ ±half a lane so bubbles stay spread out
+      ? (b.lane + 0.5) * laneW + perlin(b.t) * laneW
+      : b.xFrac * W + perlin(b.t) * CONFIG.wobble;
 
     // push out of the center card, toward whichever side the bubble is on
-    if (cardRect) {
+    // (portrait: the card spans the top and the field starts below it)
+    if (cardRect && !vertical) {
       const left = cardRect.left - CONFIG.cardGap, right = cardRect.right + CONFIG.cardGap;
       if (x + half > left && x - half < right) {
         x = x < W / 2 ? left - half : right + half;
@@ -217,9 +242,13 @@ function animate() {
     }
 
     // keep open bubbles on screen (wins over card avoidance if there's no room)
+    // (y is relative to the field, which starts below the card in portrait)
     if (open) {
-      const clampY = Math.min(Math.max(b.y, half), H - half);
+      const top = vertical ? CONFIG.cardGap : 0;
+      const clampY = Math.min(Math.max(b.y, top + half), fieldH - half);
       b.y += (clampY - b.y) / 20;
+      x = Math.min(Math.max(x, half), W - half);
+    } else if (vertical) {
       x = Math.min(Math.max(x, half), W - half);
     }
 
