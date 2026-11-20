@@ -1,14 +1,28 @@
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}
+
 html, body {
-  height: 100%;
   margin: 0;
-  overflow: hidden;
   background: #f0f8ff;
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
 
+/* First screen: holds the bubbles and center card, then the page scrolls
+   on to the static sections below. */
+.hero {
+  position: relative;
+  height: 100vh;
+  height: 100svh;          /* ignores mobile browser bars where supported */
+  overflow: hidden;
+}
+
 #bubble-field {
-  position: fixed;
+  position: absolute;
   inset: 0;
+  overflow: hidden;        /* bubbles never spill into the sections below */
+  z-index: 0;              /* own stacking layer, kept under the center card */
 }
 
 /* ─── Bubble shell ─────────────────────────────────────────────── */
@@ -105,7 +119,7 @@ html, body {
 /* ─── Center card ──────────────────────────────────────────────── */
 /* z-index 5: above closed bubbles (1), below open bubbles (10) */
 .center-card {
-  position: fixed;
+  position: absolute;
   left: 50%;
   top: 0;
   bottom: 0;
@@ -228,14 +242,81 @@ html, body {
   transform: translateY(-2px);
 }
 
+/* ─── Scroll-down arrow (bottom of the center card) ───────────── */
+.center-card .scroll-down {
+  position: absolute;
+  bottom: 0.1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  color: #888;
+  transition: color 0.15s ease;
+}
+.center-card .scroll-down svg {
+  width: 1.75rem;
+  height: 1.75rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  animation: scroll-bob 2s ease-in-out infinite;
+}
+.center-card .scroll-down:hover,
+.center-card .scroll-down:focus-visible { color: #222; }
+@keyframes scroll-bob {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(4px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .center-card .scroll-down svg { animation: none; }
+}
+
+/* ─── About (static section below the bubbles) ───────────────── */
+.about {
+  display: flex;
+  align-items: center;
+  gap: clamp(1.5rem, 5vw, 4rem);
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: clamp(3rem, 8vw, 6rem) 1.5rem;
+  color: #222;
+}
+.about-photo {
+  flex: 0 0 min(320px, 35%);
+  aspect-ratio: 4 / 5;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #e3e8ee;          /* placeholder until a photo is added */
+  border: 2px dashed #b8c2cc;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.12);
+}
+.about-photo:has(img) { border: none; }
+.about-photo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.about-text { flex: 1; line-height: 1.6; }
+.about-text h2 { margin: 0 0 1rem; font-size: clamp(1.5rem, 3vw, 2rem); }
+.about-text p  { margin: 0 0 1em; }
+.about-text p:last-child { margin-bottom: 0; }
+
 /* ─── Portrait (phones): card becomes a compact bar across the top ── */
 @media (orientation: portrait) {
   /* bubbles live only below the card: the field starts at the card's bottom
-     edge (--card-h set from JS) and clips anything above it */
+     edge (--card-h set from JS), so nothing is ever behind the card */
   #bubble-field {
     top: var(--card-h, 0px);
-    overflow: hidden;
   }
+  /* about: photo stacks above the text */
+  .about { flex-direction: column; align-items: stretch; }
+  .about-photo { flex: none; width: min(320px, 100%); margin: 0 auto; }
   .center-card {
     left: 0;
     right: 0;
@@ -245,6 +326,15 @@ html, body {
     min-width: 0;
     padding: 1rem;
   }
+  /* card is a short bar here: arrow sits in the flow under the buttons */
+  .center-card .scroll-down {
+    position: static;
+    transform: none;
+    margin: 0.25rem auto -0.5rem;
+    width: 2rem;
+    height: 2rem;
+  }
+  .center-card .scroll-down svg { width: 1.4rem; height: 1.4rem; }
   .center-card .photo { width: 72px; margin-bottom: 0.5rem; border-radius: 12px; }
   .center-card h1 { margin-bottom: 0.75rem; font-size: 1.5rem; }
   .center-card .links {
